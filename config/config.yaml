@@ -1,0 +1,201 @@
+# ================================================================
+# Vendor Scraper System — Master Config
+# Edit this file to add vendors, change API keys, adjust limits.
+# All agents read from here. No hardcoded values in scripts.
+# ================================================================
+
+# ── API Keys ────────────────────────────────────────────────────
+apis:
+  apify_token: ""                  # https://console.apify.com/account/integrations
+  anthropic_api_key: ""            # or set ANTHROPIC_API_KEY env var
+  zoominfo_enabled: false          # flip to true when ready to add ZoomInfo enrichment
+
+# ── Google Sheets ────────────────────────────────────────────────
+google_sheets:
+  spreadsheet_id: ""               # from URL: docs.google.com/spreadsheets/d/{ID}/edit
+  credentials_file: "config/google_credentials.json"
+  raw_sheet_prefix: "raw_"         # tabs: raw_walmart, raw_costco, etc.
+  enriched_sheet: "master_enriched"
+  state_sheet: "system_state"
+
+# ── Output ───────────────────────────────────────────────────────
+output:
+  excel_path: "output/vendor_companies.xlsx"
+  auto_export_after_enrich: true
+
+# ── Claude ICP Scoring ───────────────────────────────────────────
+claude_scoring:
+  model: "claude-haiku-4-5-20251001"  # fast + cheap for batch scoring
+  max_tokens: 300
+  icp_criteria:
+    business_model: ["B2C", "DTC"]
+    revenue_min_usd: 10000000          # $10M
+    revenue_max_usd: 500000000         # $500M
+    hq_countries: ["US", "CA"]
+    exclude_china_presence: true
+    exclude_tmall_presence: true
+    target_categories:
+      - beauty
+      - health and wellness
+      - food and beverage
+      - fashion and apparel
+      - home and living
+      - sports and outdoors
+      - pets
+      - baby and kids
+
+# ── Scraping Defaults ─────────────────────────────────────────────
+scraping_defaults:
+  rate_limit_delay: 2.0
+  max_retries: 3
+  timeout_seconds: 60
+
+# ── Vendors ──────────────────────────────────────────────────────
+#
+# category_filter: list of keywords to match against a product's category
+# name. Matching is fuzzy (keyword-in-string, case-insensitive), so
+# "vitamin" matches "Vitamins & Supplements", "Vitamin C", "Multivitamin".
+#
+# Leave category_filter as [] to scrape ALL categories for that vendor.
+# Add or remove keywords freely — no code changes needed.
+
+vendors:
+
+  walmart:
+    enabled: true
+    display_name: "Walmart"
+    apify_actor_id: "apify/walmart-scraper"
+    scrape_type: "sellers"
+    max_items: 5000
+    dedup_key: "seller_id"
+    category_filter:
+      # Health & wellness
+      - health
+      - wellness
+      - vitamin
+      - supplement
+      - protein
+      - probiotic
+      - collagen
+      - omega
+      - herbal
+      - natural remedy
+      - immune
+      - weight loss
+      - diet
+      # Personal care
+      - personal care
+      - skin care
+      - skincare
+      - hair care
+      - haircare
+      - body care
+      - oral care
+      - deodorant
+      - shampoo
+      - conditioner
+      - lotion
+      - sunscreen
+      - spf
+      # Beauty
+      - beauty
+      - cosmetic
+      - makeup
+      - serum
+      - moisturizer
+      # Sports & fitness
+      - sports nutrition
+      - fitness
+      - workout
+      - pre-workout
+      - post-workout
+      # Food & beverage (health-focused)
+      - organic
+      - superfood
+      - energy drink
+      - electrolyte
+      - hydration
+
+  costco:
+    enabled: true
+    display_name: "Costco"
+    apify_actor_id: "apify/web-scraper"
+    start_url: "https://www.costco.com/brands.html"
+    max_items: 2000
+    dedup_key: "brand_name"
+    category_filter:
+      - health
+      - wellness
+      - vitamin
+      - supplement
+      - protein
+      - personal care
+      - beauty
+      - skin care
+      - skincare
+      - hair care
+      - organic
+      - sports
+      - fitness
+      - nutrition
+
+  amazon:
+    enabled: true
+    display_name: "Amazon"
+    apify_actor_id: "apify/amazon-crawler"
+    scrape_type: "sellers"
+    max_items: 5000
+    dedup_key: "seller_id"
+    category_filter:
+      - health
+      - wellness
+      - vitamin
+      - supplement
+      - protein
+      - probiotic
+      - collagen
+      - personal care
+      - beauty
+      - skin care
+      - skincare
+      - hair care
+      - haircare
+      - sports nutrition
+      - fitness
+      - organic
+      - natural
+
+  target:
+    enabled: true
+    display_name: "Target"
+    apify_actor_id: "apify/web-scraper"
+    start_url: "https://www.target.com/brands"
+    max_items: 2000
+    dedup_key: "brand_slug"
+    category_filter:
+      - health
+      - wellness
+      - vitamin
+      - supplement
+      - protein
+      - personal care
+      - beauty
+      - skin care
+      - skincare
+      - hair care
+      - sports
+      - fitness
+      - nutrition
+      - organic
+
+  # ── Template: copy to add a new vendor ────────────────────────
+  # new_vendor:
+  #   enabled: false
+  #   display_name: "New Vendor"
+  #   apify_actor_id: "apify/web-scraper"
+  #   start_url: "https://..."
+  #   max_items: 1000
+  #   dedup_key: "company_name"
+  #   category_filter:       # leave as [] to keep all categories
+  #     - health
+  #     - beauty

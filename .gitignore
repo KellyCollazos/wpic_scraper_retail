@@ -1,0 +1,16 @@
+# API credentials — never commit these
+config/google_credentials.json
+.env
+
+# Output files
+output/*.xlsx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# State cache
+state/*.json
